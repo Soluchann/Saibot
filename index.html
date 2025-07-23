@@ -11,6 +11,7 @@
             font-family: 'Inter', sans-serif;
             background-color: #000000;
             color: #FFFFFF;
+            overflow-x: hidden;
         }
 
         /* --- Layout Transition System --- */
@@ -18,6 +19,7 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
+            min-height: 100vh;
             justify-content: center; /* Initial state: center */
             transition: justify-content 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -27,17 +29,18 @@
         }
 
         #header-title {
-             transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-             font-size: 3rem; /* text-5xl */
-             font-weight: 700;
-             text-align: center;
-             padding: 2rem 1rem;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: clamp(2rem, 8vw, 3rem); /* Responsive font size */
+            font-weight: 700;
+            text-align: center;
+            padding: clamp(1rem, 4vw, 2rem) 1rem;
+            line-height: 1.2;
         }
 
         body.chat-active #header-title {
-            font-size: 1.25rem; /* text-xl */
+            font-size: clamp(1.125rem, 4vw, 1.25rem); /* text-xl responsive */
             font-weight: 500;
-            padding: 1rem;
+            padding: clamp(0.75rem, 2vw, 1rem);
             border-bottom: 1px solid #222;
         }
         
@@ -45,7 +48,9 @@
             opacity: 0;
             flex-grow: 1;
             overflow-y: auto;
+            overflow-x: hidden;
             transition: opacity 0.5s ease-in-out 0.3s;
+            padding: 0 1rem;
         }
         
         body.chat-active #chat-window {
@@ -67,6 +72,12 @@
         #chat-window::-webkit-scrollbar-track { background: #0a0a0a; }
         #chat-window::-webkit-scrollbar-thumb { background-color: #2a2a2a; border-radius: 10px; border: 2px solid #0a0a0a; }
         
+        /* Hide scrollbar on mobile */
+        @media (max-width: 768px) {
+            #chat-window::-webkit-scrollbar { display: none; }
+            #chat-window { -ms-overflow-style: none; scrollbar-width: none; }
+        }
+        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .message-container { animation: fadeIn 0.4s ease-out; }
         
@@ -76,24 +87,66 @@
         .starter-card {
             background-color: #111111;
             border: 1px solid #333;
-            border-radius: 0.75rem;
-            padding: 1rem;
+            border-radius: clamp(0.5rem, 2vw, 0.75rem);
+            padding: clamp(0.75rem, 3vw, 1rem);
             cursor: pointer;
             transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
         }
         .starter-card:hover {
             background-color: #1a1a1a;
             border-color: #555;
-            transform: translateY(-2px);
         }
+        
+        /* Only apply hover transform on non-touch devices */
+        @media (hover: hover) {
+            .starter-card:hover {
+                transform: translateY(-2px);
+            }
+        }
+        
         .title-gradient {
             background: linear-gradient(to right, #ffffff, #999999);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+        
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            body.chat-active #main-container {
+                height: 100vh;
+                height: 100dvh; /* Dynamic viewport height for mobile */
+            }
+            
+            #chat-window {
+                padding: 0 0.75rem;
+            }
+            
+            .message-container {
+                margin-bottom: 1rem;
+            }
+            
+            .starter-card p {
+                font-size: 0.9rem;
+            }
+            
+            .starter-card .text-sm {
+                font-size: 0.8rem;
+            }
+        }
+        
+        /* Very small screens */
+        @media (max-width: 480px) {
+            #header-title {
+                font-size: clamp(1.5rem, 10vw, 2.5rem);
+            }
+            
+            body.chat-active #header-title {
+                font-size: clamp(1rem, 5vw, 1.125rem);
+            }
+        }
     </style>
 </head>
-<body class="overflow-hidden">
+<body>
 
     <div id="main-container">
         <header class="w-full">
@@ -101,35 +154,35 @@
         </header>
 
         <main id="chat-window" class="w-full">
-            <div id="chat-container-inner" class="max-w-3xl mx-auto p-4 space-y-8">
+            <div id="chat-container-inner" class="max-w-3xl mx-auto py-4 space-y-6">
                 <!-- Chat messages appear here -->
             </div>
         </main>
 
-        <footer class="w-full p-4">
+        <footer class="w-full p-3 sm:p-4">
             <div class="max-w-3xl mx-auto">
-                 <div id="starter-questions" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                 <div id="starter-questions" class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-3 sm:mb-4">
                      <div class="starter-card" onclick="askStarterQuestion('What are the key skills listed in the resume?')">
-                         <p class="font-semibold">Summarize Skills</p>
-                         <p class="text-sm text-gray-400">Give me a summary of key skills.</p>
+                         <p class="font-semibold text-sm sm:text-base">Summarize Skills</p>
+                         <p class="text-xs sm:text-sm text-gray-400 mt-1">Give me a summary of key skills.</p>
                      </div>
                      <div class="starter-card" onclick="askStarterQuestion('Which top projects are highlighted in the resume?')">
-                         <p class="font-semibold">Top Projects</p>
-                         <p class="text-sm text-gray-400">What are the most important projects?</p>
+                         <p class="font-semibold text-sm sm:text-base">Top Projects</p>
+                         <p class="text-xs sm:text-sm text-gray-400 mt-1">What are the most important projects?</p>
                      </div>
                      <div class="starter-card" onclick="askStarterQuestion('What kind of jobs would be a good fit based on this resume?')">
-                         <p class="font-semibold">Job Fit</p>
-                         <p class="text-sm text-gray-400">What jobs am I a good fit for?</p>
+                         <p class="font-semibold text-sm sm:text-base">Job Fit</p>
+                         <p class="text-xs sm:text-sm text-gray-400 mt-1">What jobs am I a good fit for?</p>
                      </div>
                      <div class="starter-card" onclick="askStarterQuestion('What is the work experience mentioned in the resume?')">
-                         <p class="font-semibold">Work Experience</p>
-                         <p class="text-sm text-gray-400">Can you detail the work experience?</p>
+                         <p class="font-semibold text-sm sm:text-base">Work Experience</p>
+                         <p class="text-xs sm:text-sm text-gray-400 mt-1">Can you detail the work experience?</p>
                      </div>
                  </div>
-                <div class="flex items-center bg-[#111111] border border-gray-800 rounded-xl p-2 transition-all duration-300 focus-within:ring-2 focus-within:ring-gray-600">
-                    <input type="text" id="userInput" class="w-full bg-transparent focus:outline-none px-3" placeholder="Ask a question about the resume...">
-                    <button id="sendButton" class="bg-white text-black p-2 rounded-lg transition-transform duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                <div class="flex items-center bg-[#111111] border border-gray-800 rounded-xl p-2 transition-all duration-300 focus-within:ring-2 focus-within:ring-gray-600 min-h-[48px]">
+                    <input type="text" id="userInput" class="w-full bg-transparent focus:outline-none px-2 sm:px-3 text-sm sm:text-base" placeholder="Ask a question about the resume...">
+                    <button id="sendButton" class="bg-white text-black p-2 rounded-lg transition-transform duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 touch-manipulation">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sm:w-5 sm:h-5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                     </button>
                 </div>
             </div>
@@ -156,9 +209,9 @@
             const messageContainer = document.createElement('div');
             messageContainer.classList.add('message-container', 'flex', 'gap-4');
             messageContainer.innerHTML = sender === 'user' ? `
-                <div class="ml-auto bg-white text-black rounded-lg p-3 max-w-2xl order-1"><p>${text}</p></div>` : `
-                <div class="flex-shrink-0 w-8 h-8 rounded-md bg-white flex items-center justify-center text-black font-bold text-sm">AI</div>
-                <div class="bot-bubble bg-[#111111] border border-gray-800 rounded-lg p-3 max-w-2xl"><p class="text-gray-200">${text}</p></div>`;
+                <div class="ml-auto bg-white text-black rounded-lg p-3 max-w-[85%] sm:max-w-2xl order-1 break-words"><p class="text-sm sm:text-base">${text}</p></div>` : `
+                <div class="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-white flex items-center justify-center text-black font-bold text-xs sm:text-sm">AI</div>
+                <div class="bot-bubble bg-[#111111] border border-gray-800 rounded-lg p-3 max-w-[85%] sm:max-w-2xl break-words"><p class="text-gray-200 text-sm sm:text-base">${text}</p></div>`;
             chatContainerInner.appendChild(messageContainer);
             chatWindow.scrollTop = chatWindow.scrollHeight;
             return messageContainer;
@@ -169,7 +222,7 @@
             indicatorContainer.id = 'typing-indicator';
             indicatorContainer.classList.add('message-container', 'flex', 'gap-4');
             indicatorContainer.innerHTML = `
-                <div class="flex-shrink-0 w-8 h-8 rounded-md bg-white flex items-center justify-center text-black font-bold text-sm">AI</div>
+                <div class="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-white flex items-center justify-center text-black font-bold text-xs sm:text-sm">AI</div>
                 <div class="bg-[#111111] border border-gray-800 rounded-lg p-3 max-w-2xl">
                     <div class="w-2 h-5 typing-cursor"></div>
                 </div>`;
@@ -249,3 +302,15 @@
     </script>
 </body>
 </html>
+
+    <script>
+        // Prevent zoom on input focus for iOS
+        document.addEventListener('touchstart', function() {}, true);
+        
+        // Handle viewport height changes on mobile
+        function setViewportHeight() {
+            document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+        }
+        setViewportHeight();
+        window.addEventListener('resize', setViewportHeight);
+    </script>
