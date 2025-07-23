@@ -367,7 +367,11 @@
             }
             
             #chat-window {
-                padding: 0 0.75rem;
+                padding: 0 0.75rem 1rem 0.75rem;
+            }
+            
+            #chat-container-inner {
+                padding-bottom: 2rem;
             }
             
             .message-container {
@@ -424,12 +428,12 @@
         </header>
 
         <main id="chat-window" class="w-full">
-            <div id="chat-container-inner" class="max-w-3xl mx-auto py-4 space-y-6">
+            <div id="chat-container-inner" class="max-w-3xl mx-auto py-4 space-y-6 pb-8">
                 <!-- Chat messages appear here -->
             </div>
         </main>
 
-        <footer class="w-full p-3 sm:p-4">
+        <footer class="w-full p-3 sm:p-4 bg-black/80 backdrop-blur-sm border-t border-gray-800/50">
             <div class="max-w-3xl mx-auto">
                  <div id="starter-questions" class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-3 sm:mb-4">
                      <div class="starter-card" onclick="askStarterQuestion('What are the key skills listed in the resume?')">
