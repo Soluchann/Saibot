@@ -7,6 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* --- Essential Fixes for Full Height --- */
+        html, body {
+            height: 100%; /* Ensure html and body take full viewport height */
+            margin: 0;    /* Remove default margin */
+            padding: 0;   /* Remove default padding */
+        }
+        /* --- End Essential Fixes --- */
+
         :root {
             --vh: 1vh;
         }
@@ -15,7 +23,9 @@
             background-color: #000000;
             color: #FFFFFF;
             overflow-x: hidden;
+            /* Use standard 100vh as fallback, then var(--vh, 1vh) * 100 for better mobile support */
             background: radial-gradient(ellipse at center, #0a0a0a 0%, #000000 100%);
+            height: 100%; /* Fallback */
             height: calc(var(--vh, 1vh) * 100);
         }
         /* --- Advanced Background Animation --- */
@@ -43,9 +53,10 @@
         /* --- Layout Transition System --- */
         #main-container {
             display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            /* Use 100% of html height, fallback to vh */
+            min-height: 100%;
             min-height: calc(var(--vh, 1vh) * 100);
+            flex-direction: column; /* Stack children vertically */
             position: relative;
         }
         #header-title {
@@ -76,13 +87,11 @@
             z-index: 10;
         }
         #chat-window {
-            flex-grow: 1;
+            flex-grow: 1; /* Takes available space between header and footer */
             overflow-y: auto;
             overflow-x: hidden;
             padding: 0 1rem;
             position: relative;
-            /* Add margin bottom to ensure content doesn't go under fixed input */
-            margin-bottom: calc(4rem + 24px); /* Adjust based on input height */
         }
         /* --- Component Styles & Animations --- */
         #chat-window::-webkit-scrollbar { width: 8px; }
@@ -103,9 +112,6 @@
         @media (max-width: 768px) {
             #chat-window::-webkit-scrollbar { display: none; }
             #chat-window { -ms-overflow-style: none; scrollbar-width: none; }
-            #chat-window {
-                margin-bottom: calc(3.5rem + 20px); /* Adjust for mobile input height */
-            }
         }
         @keyframes messageSlideIn {
             from {
@@ -230,6 +236,7 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
+             flex-shrink: 0; /* Prevent footer from shrinking */
         }
         .input-container::before {
             content: '';
@@ -348,6 +355,18 @@
                 transition-duration: 0.01ms !important;
             }
         }
+        /* Starter Questions Visibility */
+        #starter-questions {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            display: none;
+        }
+        #starter-questions.visible {
+            opacity: 1;
+            pointer-events: auto;
+            display: grid;
+        }
     </style>
 </head>
 <body>
@@ -360,7 +379,7 @@
                 <!-- Chat messages appear here -->
             </div>
         </main>
-        <footer class="fixed bottom-0 left-0 right-0 p-3 sm:p-4 bg-black/80 backdrop-blur-sm border-t border-gray-800/50 z-20">
+        <footer class="w-full p-3 sm:p-4 bg-black/80 backdrop-blur-sm border-t border-gray-800/50">
             <div class="max-w-3xl mx-auto">
                  <div id="starter-questions" class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-3 sm:mb-4">
                      <div class="starter-card" onclick="askStarterQuestion('What are the key skills listed in the resume?')">
@@ -396,19 +415,17 @@
         const chatWindow = document.getElementById('chat-window');
         const chatContainerInner = document.getElementById('chat-container-inner');
         const starterQuestions = document.getElementById('starter-questions');
-        const backendUrl = 'https://soluchann-my-portfolio.hf.space/ask';
+        const backendUrl = 'https://soluchann-my-portfolio.hf.space/ask'; // Ensure this URL is correct
         let chatIsActive = false;
+
         function activateChat() {
             if (chatIsActive) return;
             chatIsActive = true;
             body.classList.add('chat-active');
             // Hide starter questions when chat is activated
-            setTimeout(() => {
-                starterQuestions.style.opacity = '0';
-                starterQuestions.style.transform = 'translateY(20px)';
-                starterQuestions.style.pointerEvents = 'none';
-            }, 300);
+            starterQuestions.classList.remove('visible');
         }
+
         function appendMessage(sender, text) {
             const messageContainer = document.createElement('div');
             messageContainer.classList.add('message-container', 'flex', 'gap-4');
@@ -417,9 +434,10 @@
                 <div class="ai-avatar flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-md flex items-center justify-center text-black font-bold text-xs sm:text-sm">AI</div>
                 <div class="bot-bubble rounded-lg p-3 max-w-[85%] sm:max-w-2xl break-words"><p class="text-gray-200 text-sm sm:text-base">${text}</p></div>`;
             chatContainerInner.appendChild(messageContainer);
-            chatWindow.scrollTop = chatWindow.scrollHeight;
+            // Scroll handled by MutationObserver
             return messageContainer;
         }
+
         function showTypingIndicator() {
             const indicatorContainer = document.createElement('div');
             indicatorContainer.id = 'typing-indicator';
@@ -430,8 +448,9 @@
                     <div class="w-2 h-5 typing-cursor"></div>
                 </div>`;
             chatContainerInner.appendChild(indicatorContainer);
-            chatWindow.scrollTop = chatWindow.scrollHeight;
+            // Scroll handled by MutationObserver
         }
+
         function hideTypingIndicator() {
             const indicator = document.getElementById('typing-indicator');
             if (indicator) {
@@ -440,6 +459,7 @@
                 setTimeout(() => indicator.remove(), 300);
             }
         }
+
         async function streamText(element, text) {
             return new Promise(resolve => {
                 let index = 0;
@@ -448,7 +468,7 @@
                 function type() {
                     if (index < text.length) {
                         p.textContent += text.charAt(index++);
-                        chatWindow.scrollTop = chatWindow.scrollHeight;
+                        // Scroll handled by MutationObserver
                         setTimeout(type, 15);
                     } else {
                         resolve();
@@ -457,6 +477,7 @@
                 type();
             });
         }
+
         async function sendMessage(question) {
             if (!question) return;
             activateChat();
@@ -479,6 +500,7 @@
                 await streamText(bubbleElement, botReply);
             } catch (error) {
                 hideTypingIndicator();
+                console.error("Error sending message:", error); // Log error for debugging
                 let errorMessage = 'Sorry, something went wrong. Please try again.';
                 if (error.message.includes('500')) errorMessage = 'There was a problem with the backend. Please check the server logs.';
                 else if (error.message.includes('Failed to fetch')) errorMessage = 'Could not connect to the backend.';
@@ -487,32 +509,37 @@
                 sendButton.disabled = false;
             }
         }
+
         function askStarterQuestion(question) {
             userInput.value = question;
             sendMessage(question);
         }
+
         sendButton.addEventListener('click', () => sendMessage(userInput.value.trim()));
         userInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !sendButton.disabled) {
                 sendMessage(userInput.value.trim());
             }
         });
-        userInput.addEventListener('input', () => {
-            if (userInput.value.trim() !== '') {
-                activateChat();
+
+        // Show starter questions only when input is focused and no chat yet
+        userInput.addEventListener('focus', () => {
+            if (!chatIsActive) {
+                starterQuestions.classList.add('visible');
             }
         });
 
-        // Prevent zoom on input focus for iOS
+        // Prevent zoom on input focus for iOS (already present)
         document.addEventListener('touchstart', function() {}, true);
-        // Handle viewport height changes on mobile
+
+        // Handle viewport height changes on mobile (already present)
         function setViewportHeight() {
             document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
         }
         setViewportHeight();
         window.addEventListener('resize', setViewportHeight);
 
-        // Ensure chat window scrolls to bottom when new messages are added
+        // Ensure chat window scrolls to bottom when new messages are added (already present)
         const observer = new MutationObserver(() => {
             chatWindow.scrollTop = chatWindow.scrollHeight;
         });
